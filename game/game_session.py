@@ -5,32 +5,34 @@ from numpy import transpose, array
 
 class Player:
 
-    def __init__(self, player_name, symbol):
+    def __init__(self, player_name, disk):
         self.player_name = player_name
-        self.symbol = symbol
-        self.player_id = uuid4()
+        self.disk = disk
+        self.player_id = str(uuid4())
 
     def player_details(self):
 
-        return {'player_name': self.player_name, 'player_id': self.player_id, 'symbol': self.symbol}
+        return {'player_name': self.player_name, 'player_id': self.player_id, 'disk': self.disk}
 
 
 class Board:
 
     LAST_COUNTER = None
 
-    def __init__(self, cols, rows):
+    def __init__(self, cols, rows, valid_disks):
         self.cols = cols
         self.rows = rows
-
+        self.valid_disks = valid_disks
         self.board_matrix = array([['_'] * self.rows for _ in range(self.cols)])
 
-    def drop_counter(self, col, symbol):
+    def drop_disk(self, col, disk):
 
+        if disk not in self.valid_disks and disk == self.LAST_COUNTER:
+            raise Exception(f'Invalid disk: {disk}.')
         try:
             insert_index = ''.join(self.board_matrix[col]).rindex('_')
-            self.board_matrix[col][insert_index] = symbol
-            self.LAST_COUNTER = symbol
+            self.board_matrix[col][insert_index] = disk
+            self.LAST_COUNTER = disk
         except ValueError:
             raise ValueError('No space left in that column')
 
@@ -45,12 +47,12 @@ class Board:
 class GameSession:
 
     STATE = 'WAITING FOR PLAYERS'
-    PLAYER_1 = None
-    PLAYER_2 = None
+    PLAYER_1, PlAYER_1_COUNTER = None, 'X'
+    PLAYER_2, PlAYER_2_COUNTER = None, 'O'
 
     def __init__(self):
         self.game_id = '123'  # uuid4()
-        self.board = Board(cols=9, rows=6)
+        self.board = Board(9, 6, [self.PlAYER_1_COUNTER, self.PlAYER_2_COUNTER])
 
     @property
     def waiting_for_players(self):
@@ -97,23 +99,23 @@ class GameSession:
     def check_column(self, col_number):
         """
         Check for 5 in a row for a column.
-        Only need to check first 2 symbols due to only having 6 vertical spaces.
-        Only check column if the number of counters is greater than 4.
+        Only need to check first 2 slots due to only having 6 vertical spaces.
+        Only check column if the number of disks is greater than 4.
         :return:
         """
 
         if self.board[col_number].count('X') + self.board[col_number].count('O') > 4:
-            for symbol in reversed(self.board[col_number]):
+            for disk in reversed(self.board[col_number]):
                 # Iterating top down increases efficiency
-                current_symbol = '_'
+                current_disk = '_'
                 num_in_a_row = 0
-                if symbol == '_':
-                    # no more player counters in the column
+                if disk == '_':
+                    # no more player disks in the column
                     break
-                if symbol == current_symbol:
+                if disk == current_disk:
                     num_in_a_row += 1
                 else:
-                    current_symbol = symbol
+                    current_disk = disk
                     num_in_a_row = 0
                     continue
                 if num_in_a_row == 5:
@@ -121,16 +123,15 @@ class GameSession:
 
     def next_player_turn(self):
         """
-        Determine the next player to drop a counter
+        Determine the next player to drop a disk
 
         :return: Player ID of next player
         :rtype:
         """
 
-        last_counter = self.board.LAST_COUNTER
-        for player in [self.PLAYER_1, self.PLAYER_2]:
-            if player.symbol == last_counter:
-                return player.player_id
+        last_disk = self.board.LAST_COUNTER
+        if last_disk:
+            return self.PLAYER_2.player_id if self.PLAYER_1.disk == last_disk else self.PLAYER_1.player_id
 
         # No player has made a move yet
         return self.PLAYER_1.player_id

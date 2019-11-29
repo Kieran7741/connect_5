@@ -35,7 +35,7 @@ def get_game_status(game_id):
 
 
 @app.route(API_PREFIX + '/drop_counter', methods=['POST'])
-def drop_counter():
+def drop_disk():
 
     drop_data = request.json
 
@@ -45,7 +45,7 @@ def drop_counter():
         if not game_session.next_player_turn() == drop_data['player_id']:
             raise Exception(f'Wait your turn client: {drop_data["player_id"]}')
 
-        game_session.board.drop_counter(drop_data['column'], drop_data['symbol'])
+        game_session.board.drop_disk(drop_data['column'], drop_data['disk'])
         return jsonify(game_session.game_details())
     except Exception as e:
         return abort(400, e)
