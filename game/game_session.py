@@ -66,12 +66,12 @@ class GameSession:
         """
         if not self.PLAYER_1:
             self.PLAYER_1 = Player(player_name, 'X')
-            return self.PLAYER_1.player_id
+            return self.PLAYER_1
         elif not self.PLAYER_2:
             if self.PLAYER_1.player_name != player_name:
                 self.PLAYER_2 = Player(player_name, 'O')
                 self.STATE = 'READY'
-                return self.PLAYER_2.player_id
+                return self.PLAYER_2
             else:
                 raise Exception(f'Name: {player_name} already in use.')
 
@@ -85,6 +85,7 @@ class GameSession:
                                                                               self.PLAYER_2.player_details()],
                     'game_board': str(self.board), 'player_turn': self.next_player_turn(), 'winner': self.check_for_winner()}
         else:
+            # Game has not started
             return {'game_id': self.game_id, 'state': self.STATE}
 
     def check_for_winner(self):

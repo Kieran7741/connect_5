@@ -1,7 +1,7 @@
 import os
 import requests
 from retrying import retry
-
+from pprint import pprint
 from time import time
 
 HOST = 'http://127.0.0.1:5000'
@@ -20,14 +20,6 @@ def make_request_to_server(endpoint, method='GET', body=None):
     return requests.get(url) if method == 'GET' else requests.post(url, data=body)
 
 
-def establish_connection(player_name):
-
-    res = make_request_to_server(f'connect/{player_name}')
-
-    if res.status_code == '200':
-        return res['player_id']
-
-
 class Client:
 
     def __init__(self, player_name):
@@ -35,19 +27,24 @@ class Client:
         self.player_id = None
         self.game_id = None
         self.game_state = None
+        self.disk = None
 
     def establish_connection(self):
         """
         Establish connection to Game session
+
         :return: Connection successful
         :rtype: bool
         """
+
         res = make_request_to_server(f'connect/{self.player_name}')
         print(res.status_code)
         if res.status_code == 200:
             response_json = res.json()
             self.game_id = response_json['game_id']
-            self.player_id = res.json()['player_id']
+            player = response_json['player']
+            self.player_id = player['player_id']
+            self.disk = player['disk']
             print('Successfully established connection to server')
             return True
 
@@ -55,9 +52,11 @@ class Client:
     def poll_until_other_player_connected(self):
         """
         Poll server until opponent found. Max wait time 60 seconds
+
         :return: Opponent found.
         :raises Exception: if opponent not found withing the 60 second time out.
         """
+
         print('Waiting until opponent joins....')
         res = make_request_to_server(f'opponent/joined/{self.game_id}')
 
@@ -70,10 +69,30 @@ class Client:
         print('Still waiting on opponent. Sleeping for 5 seconds.')
         raise Exception('No opponent joined within the timeout of 60 seconds.')
 
+    def get_game_status(self):
+        """
+        Query server for game status
+
+        :return: Json response
+        :rtype: dict
+        """
+
+        res = make_request_to_server(f'game_status/{self.game_id}')
+
+        if res.status_code == 200:
+            return res.json()
+        else:
+            raise Exception(f'Could not read game status: {res.status_code}')
 
 
 if __name__ == '__main__':
 
     player_1 = Client('Kieran')
     player_1.establish_connection()
+    player_2 = Client('Lyons')
+    player_2.establish_connection()
     player_1.poll_until_other_player_connected()
+
+    pprint(player_1.get_game_status())
+
+

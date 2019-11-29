@@ -20,9 +20,8 @@ def connect_to_game(player_name):
     """
 
     try:
-        game_session, player_id = connect_player_to_game(player_name)
-        return jsonify({'player_id': player_id, 'game_id': game_session.game_id,
-                        'state': game_session.STATE})
+        game_session, player = connect_player_to_game(player_name)
+        return jsonify({'player': player.player_details(), 'game_id': game_session.game_id})
     except Exception as e:
         return abort(400, e)
 
@@ -32,6 +31,7 @@ def get_game_status(game_id):
     try:
         return jsonify(get_game_session(game_id).game_details())
     except Exception as e:
+        print(e)
         return abort(400, f'Could not read game status for {game_id}: {e}')
 
 
@@ -46,8 +46,6 @@ def opponent_joined(game_id):
     """
 
     return jsonify({'opponent': not get_game_session(game_id).waiting_for_players})
-
-
 
 
 @app.route(API_PREFIX + '/drop_counter', methods=['POST'])
@@ -71,7 +69,7 @@ def connect_player_to_game(player_name):
     """
     Get a players game session.
     :param player_name: Name of player
-    :return: GameSession object and connected player id
+    :return: GameSession object and connected player object
     """
 
     for session in game_sessions[:]:
