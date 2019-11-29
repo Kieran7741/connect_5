@@ -6,7 +6,8 @@ API_PREFIX = '/api/v1'
 
 app = Flask(__name__)
 
-game_sessions = [GameSession() for _ in range(10)]  # In memory GameSessions
+MAX_GAME_SESSIONS = 10
+game_sessions = [GameSession() for _ in range(MAX_GAME_SESSIONS)]  # In memory GameSessions
 
 
 @app.route(API_PREFIX + '/connect/<player_name>')
@@ -14,7 +15,8 @@ def connect_to_game(player_name):
     """
     Provide a player with a session
     :param player_name: player_name
-    :return:
+    :return: Game session information if connection successful
+    :rtype: flask.Response
     """
 
     try:
@@ -22,6 +24,14 @@ def connect_to_game(player_name):
         return jsonify(game_session.game_details())
     except Exception as e:
         return abort(400, e)
+
+
+@app.route(API_PREFIX + '/game_status/<game_id>')
+def get_game_status(game_id):
+    try:
+        return jsonify(get_game_session(game_id).game_details())
+    except Exception as e:
+        return abort(400, f'Could not read game status for {game_id}: {e}')
 
 
 @app.route(API_PREFIX + '/drop_counter', methods=['POST'])
