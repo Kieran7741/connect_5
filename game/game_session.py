@@ -17,6 +17,8 @@ class Player:
 
 class Board:
 
+    LAST_COUNTER = None
+
     def __init__(self, cols, rows):
         self.cols = cols
         self.rows = rows
@@ -28,6 +30,7 @@ class Board:
         try:
             insert_index = ''.join(self.board_matrix[col]).rindex('_')
             self.board_matrix[col][insert_index] = symbol
+            self.LAST_COUNTER = symbol
         except ValueError:
             raise ValueError('No space left in that column')
 
@@ -78,18 +81,18 @@ class GameSession:
         if not self.waiting_for_players:
             return {'game_id': self.game_id, 'state': self.STATE, 'players': [self.PLAYER_1.player_details(),
                                                                               self.PLAYER_2.player_details()],
-                    'game_board': str(self.board)}
+                    'game_board': str(self.board), 'player_turn': self.next_player_turn(), 'winner': self.check_for_winner()}
         else:
             return {'game_id': self.game_id, 'state': self.STATE}
 
-    def check_for_winner(self, last_drop):
+    def check_for_winner(self):
         """
         Check for vertical, horizontal or diagonal 5 in a row. Using list slicing
-        :param last_drop: column of last drop
-        :return: Winning
+        :return: Winning or not
+        :rtype: bool
         """
-
-        return self.check_coulumn() or self.check_row()
+        return False
+        # return self.check_coulumn() or self.check_row()
 
     def check_column(self, col_number):
         """
@@ -115,3 +118,22 @@ class GameSession:
                     continue
                 if num_in_a_row == 5:
                     return True
+
+    def next_player_turn(self):
+        """
+        Determine the next player to drop a counter
+
+        :return: Player ID of next player
+        :rtype:
+        """
+
+        last_counter = self.board.LAST_COUNTER
+        for player in [self.PLAYER_1, self.PLAYER_2]:
+            if player.symbol == last_counter:
+                return player.player_id
+
+        # No player has made a move yet
+        return self.PLAYER_1.player_id
+
+
+

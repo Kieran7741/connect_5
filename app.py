@@ -41,10 +41,14 @@ def drop_counter():
 
     try:
         game_session = get_game_session(drop_data['game_id'])
+
+        if not game_session.next_player_turn() == drop_data['player_id']:
+            raise Exception(f'Wait your turn client: {drop_data["player_id"]}')
+
         game_session.board.drop_counter(drop_data['column'], drop_data['symbol'])
-        return jsonify({'board': str(game_session.board)})
+        return jsonify(game_session.game_details())
     except Exception as e:
-        abort(400, e)
+        return abort(400, e)
 
 
 def connect_player_to_game(player_name):
