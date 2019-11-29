@@ -20,8 +20,9 @@ def connect_to_game(player_name):
     """
 
     try:
-        game_session = connect_player_to_game(player_name)
-        return jsonify(game_session.game_details())
+        game_session, player_id = connect_player_to_game(player_name)
+        return jsonify({'player_id': player_id, 'game_id': game_session.game_id,
+                        'state': game_session.STATE})
     except Exception as e:
         return abort(400, e)
 
@@ -32,6 +33,21 @@ def get_game_status(game_id):
         return jsonify(get_game_session(game_id).game_details())
     except Exception as e:
         return abort(400, f'Could not read game status for {game_id}: {e}')
+
+
+@app.route(API_PREFIX + '/opponent/joined/<game_id>')
+def opponent_joined(game_id):
+    """
+    Check if both players have joined the game
+
+    :param game_id:
+    :return: Json containing opponent key indicating if opponent has connected
+    :rtype: flask.Response
+    """
+
+    return jsonify({'opponent': not get_game_session(game_id).waiting_for_players})
+
+
 
 
 @app.route(API_PREFIX + '/drop_counter', methods=['POST'])
@@ -55,13 +71,12 @@ def connect_player_to_game(player_name):
     """
     Get a players game session.
     :param player_name: Name of player
-    :return: GameSession object
+    :return: GameSession object and connected player id
     """
 
     for session in game_sessions[:]:
         if session.waiting_for_players:
-            session.add_player(player_name)
-            return session
+            return session, session.add_player(player_name)
 
     raise Exception('Could not find available session for player to join. Max sessions reached')
 

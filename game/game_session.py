@@ -66,12 +66,12 @@ class GameSession:
         """
         if not self.PLAYER_1:
             self.PLAYER_1 = Player(player_name, 'X')
-            return True
+            return self.PLAYER_1.player_id
         elif not self.PLAYER_2:
             if self.PLAYER_1.player_name != player_name:
                 self.PLAYER_2 = Player(player_name, 'O')
-                self.STATE = 'STARTING'
-                return True
+                self.STATE = 'READY'
+                return self.PLAYER_2.player_id
             else:
                 raise Exception(f'Name: {player_name} already in use.')
 
