@@ -27,6 +27,12 @@ class Board:
         self.turns = 0
 
     def drop_disk(self, col, disk):
+        """
+        Drop disk into board.
+        :param col:
+        :param disk:
+        :return:
+        """
 
         if disk not in self.valid_disks or disk == self.LAST_COUNTER:
             raise Exception(f'Invalid disk: {disk}.')
@@ -122,6 +128,7 @@ class GameSession:
     def __init__(self):
         self.game_id = '123'  # uuid4()
         self.board = Board(9, 6, [self.PlAYER_1_COUNTER, self.PlAYER_2_COUNTER])
+        self.winner = None
 
     @property
     def waiting_for_players(self):
@@ -153,7 +160,7 @@ class GameSession:
             return {'game_id': self.game_id, 'state': self.STATE, 'players': [self.PLAYER_1.player_details(),
                                                                               self.PLAYER_2.player_details()],
                     'game_board': str(self.board), 'player_turn': self.next_player_turn(),
-                    'winner': self.check_for_winner()}
+                    'winner': self.winner}
         else:
             # Game has not started
             return {'game_id': self.game_id, 'state': self.STATE}
@@ -182,7 +189,7 @@ class GameSession:
         winning_disc = self.board.check_for_winner()
 
         if winning_disc:
-            return self.PLAYER_1.player_id if winning_disc == self.PLAYER_1.disk else self.PLAYER_2.player_id
-        return ''
+            self.STATE = 'WINNER'
+            self.winner = self.PLAYER_1.player_id if winning_disc == self.PLAYER_1.disk else self.PLAYER_2.player_id
 
 

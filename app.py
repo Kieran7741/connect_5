@@ -60,6 +60,8 @@ def drop_disk():
             raise Exception(f'Wait your turn client: {drop_data["player_id"]}')
 
         game_session.board.drop_disk(drop_data['column'], drop_data['disk'])
+        game_session.check_for_winner()
+
         return jsonify(game_session.game_details())
     except Exception as e:
         print("Error: " + str(e))

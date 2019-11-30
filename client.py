@@ -27,6 +27,7 @@ class Client:
         self.game_id = None
         self.game_state = None
         self.disk = None
+        self.winner = None
 
     def establish_connection(self):
         """
@@ -93,7 +94,10 @@ class Client:
         drop_disk_body = {'game_id': self.game_id, 'player_id': self.player_id, 'column': col, 'disk': self.disk }
         res = make_request_to_server('drop_disk', method='POST', body=drop_disk_body)
         if res.status_code == 200:
-            return res.json()
+            response_json = res.json()
+            # Update game state and winner status
+            self.winner = response_json['winner']
+            self.game_state = response_json['state']
 
     def poll_until_turn(self):
         """
@@ -107,13 +111,21 @@ class Client:
 
         while True:
             print(f'Waiting for opponent: {round(60 - (time.time() - start_time))} seconds remaining')
-            if self.get_game_status()['player_turn'] == self.player_id:
-                break
+            game_status = self.get_game_status()
+            self.game_state = game_status['state']
+            self.winner = game_status['winner']
+            if self.game_state == 'WINNER':
+                # The game has been won
+                return False
+            elif game_status['player_turn'] == self.player_id:
+                # Players turn now
+                return True
             time.sleep(5)
             if time.time() - start_time > 60:
                 print('Opponent player took to long to respond. You are the winner.')
+                self.winner = self.player_id
+                self.game_state = 'WINNER'
                 return False
-        return True
 
     def display_board(self):
         """
@@ -154,16 +166,19 @@ def start_game():
                 player.display_board()
                 print('Board updated. Your turn.')
                 column = select_column()
-                game_status = player.drop_disk(column)
-                print(game_status['game_board'])
-
-                if game_status['winner'] == player.player_id:
-                    print('You won. Congratulations!!')
+                player.drop_disk(column)
+                player.display_board()
+                if player.game_state == 'WINNER':
                     break
             except Exception as e:
                 print('Invalid column: ' + str(e))
+        elif player.game_state == 'WINNER':
+            break
 
-        print('Game finished...')
+    if player.player_id == player.winner:
+        print('You won. Congratulations!!!')
+    else:
+        print('You lost.')
 
 
 if __name__ == '__main__':
@@ -172,7 +187,6 @@ if __name__ == '__main__':
     while play:
         print('Starting new game...')
         start_game()
-
         play_again = input("Would you like to play again? y/n: ")
         play = False if play_again != 'y' else True
 
