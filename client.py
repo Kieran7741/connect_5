@@ -17,7 +17,7 @@ def make_request_to_server(endpoint, method='GET', body=None):
     :return:
     """
     url = os.path.join(API_PREFIX, endpoint)
-    return requests.get(url) if method == 'GET' else requests.post(url, data=body)
+    return requests.get(url) if method == 'GET' else requests.post(url, json=body)
 
 
 class Client:
@@ -84,6 +84,18 @@ class Client:
         else:
             raise Exception(f'Could not read game status: {res.status_code}')
 
+    def drop_disk(self, col):
+        """
+        Drop disk into the specified column
+        :param col: Column number
+        :return: Json response from server
+        """
+
+        drop_disk_body = {'game_id': self.game_id, 'player_id': self.player_id, 'column': col, 'disk': self.disk }
+        res = make_request_to_server('drop_disk', method='POST', body=drop_disk_body)
+        if res.status_code == 200:
+            return res.json()
+
 
 if __name__ == '__main__':
 
@@ -94,5 +106,23 @@ if __name__ == '__main__':
     player_1.poll_until_other_player_connected()
 
     pprint(player_1.get_game_status())
+
+    board = player_1.drop_disk(0)['game_board']
+    print(board)
+
+    board = player_2.drop_disk(0)['game_board']
+    print(board)
+
+    board = player_1.drop_disk(0)['game_board']
+    print(board)
+
+    board = player_2.drop_disk(0)['game_board']
+    print(board)
+
+    board = player_1.drop_disk(1)['game_board']
+    print(board)
+
+    board = player_2.drop_disk(6)['game_board']
+    print(board)
 
 
