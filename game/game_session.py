@@ -1,6 +1,6 @@
 
 from uuid import uuid4
-from numpy import transpose, array
+from numpy import transpose, array, diagonal, flip
 
 
 class Player:
@@ -24,10 +24,11 @@ class Board:
         self.rows = rows
         self.valid_disks = valid_disks
         self.board_matrix = array([['_'] * self.rows for _ in range(self.cols)])
+        self.turns = 0
 
     def drop_disk(self, col, disk):
 
-        if disk not in self.valid_disks and disk == self.LAST_COUNTER:
+        if disk not in self.valid_disks or disk == self.LAST_COUNTER:
             raise Exception(f'Invalid disk: {disk}.')
         try:
             insert_index = ''.join(self.board_matrix[col]).rindex('_')
@@ -36,10 +37,78 @@ class Board:
         except ValueError:
             raise ValueError('No space left in that column')
 
+    def check_for_winner(self):
+        """
+        Check for vertical, horizontal or diagonal 5 in a row.
+        :return: Winning disk if winner found else None
+        :rtype: str or None
+        """
+
+        winner = self.check_rows_and_cols()
+
+        return winner if winner else self.check_diagonals()
+
+    def check_diagonals(self):
+        """
+        Get board diagonals from the board using numpy.diagonal.
+        Need to extract left to right diagonals and right to left diagonals of 5 or greater.
+        :return:
+        """
+        board = transpose(self.board_matrix)
+        horizontal_flip_board = flip(board) # flip board to extract right to left diagonal
+        diagonals = []
+
+        for i in range(-1, 5): # Only diagonals greater than len 4
+            diagonals.append(diagonal(board, i))
+            diagonals.append(diagonal(horizontal_flip_board))
+
+        for diag in diagonals:
+            winner = self.check_if_line_has_five_in_a_row(list(diag))
+            if winner:
+                print('Winner by connecting a col')
+                return winner
+
+    def check_rows_and_cols(self):
+        """
+        Check rows and columns for 5 in a row.
+        :return: Winning disc if winner found else none
+        :rtype: str or None
+        """
+
+        for col in self.board_matrix:
+            winner = self.check_if_line_has_five_in_a_row(list(col))
+            if winner:
+                print('Winner by connecting a col')
+                return winner
+
+        for row in transpose(self.board_matrix):
+            winner = self.check_if_line_has_five_in_a_row(list(row))
+            if winner:
+                print('Winner by connecting a row')
+                return winner
+
+    def check_if_line_has_five_in_a_row(self, line):
+        """
+        Check each list for 5 consecutive disks.
+        If the line contains 'XXXXX' or 'OOOOO' then we have a winner.
+
+        :param line: line of disks to check.
+        :type line: list
+        :return: Winning disk if winner found else None
+        :rtype: str or None
+        """
+
+        line_as_string = ''.join(line)
+
+        for disc in self.valid_disks:
+            if disc*5 in line_as_string:
+                return disc
+
     def __str__(self):
         """
         Sample output for empty board
-        :return:
+        :return: String of board
+        :rtype: str
         """
         return ' ' + str(transpose(self.board_matrix))[1:-1] + '\n\n   1   2   3   4   5   6   7   8   9  '
 
@@ -83,51 +152,18 @@ class GameSession:
         if not self.waiting_for_players:
             return {'game_id': self.game_id, 'state': self.STATE, 'players': [self.PLAYER_1.player_details(),
                                                                               self.PLAYER_2.player_details()],
-                    'game_board': str(self.board), 'player_turn': self.next_player_turn(), 'winner': self.check_for_winner()}
+                    'game_board': str(self.board), 'player_turn': self.next_player_turn(),
+                    'winner': self.check_for_winner()}
         else:
             # Game has not started
             return {'game_id': self.game_id, 'state': self.STATE}
-
-    def check_for_winner(self):
-        """
-        Check for vertical, horizontal or diagonal 5 in a row. Using list slicing
-        :return: Winning or not
-        :rtype: bool
-        """
-        return False
-        # return self.check_coulumn() or self.check_row()
-
-    def check_column(self, col_number):
-        """
-        Check for 5 in a row for a column.
-        Only need to check first 2 slots due to only having 6 vertical spaces.
-        Only check column if the number of disks is greater than 4.
-        :return:
-        """
-
-        if self.board[col_number].count('X') + self.board[col_number].count('O') > 4:
-            for disk in reversed(self.board[col_number]):
-                # Iterating top down increases efficiency
-                current_disk = '_'
-                num_in_a_row = 0
-                if disk == '_':
-                    # no more player disks in the column
-                    break
-                if disk == current_disk:
-                    num_in_a_row += 1
-                else:
-                    current_disk = disk
-                    num_in_a_row = 0
-                    continue
-                if num_in_a_row == 5:
-                    return True
 
     def next_player_turn(self):
         """
         Determine the next player to drop a disk
 
         :return: Player ID of next player
-        :rtype:
+        :rtype: str
         """
 
         last_disk = self.board.LAST_COUNTER
@@ -137,5 +173,16 @@ class GameSession:
         # No player has made a move yet
         return self.PLAYER_1.player_id
 
+    def check_for_winner(self):
+        """
+        Check for winner get winners id
+        :return: Winners id if winner found else blank string
+        :rtype: str
+        """
+        winning_disc = self.board.check_for_winner()
+
+        if winning_disc:
+            return self.PLAYER_1.player_id if winning_disc == self.PLAYER_1.disk else self.PLAYER_2.player_id
+        return ''
 
 
