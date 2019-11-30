@@ -1,7 +1,6 @@
 import os
 import requests
 from retrying import retry
-from pprint import pprint
 import time
 
 HOST = 'http://127.0.0.1:5000'
@@ -107,7 +106,7 @@ class Client:
         start_time = time.time()
 
         while True:
-            print(f'Waiting for opponent: {60 - (time.time() - start_time)} seconds remaining')
+            print(f'Waiting for opponent: {round(60 - (time.time() - start_time))} seconds remaining')
             if self.get_game_status()['player_turn'] == self.player_id:
                 break
             time.sleep(5)
@@ -140,26 +139,44 @@ def select_column():
             print('Please enter an integer')
 
 
+def start_game():
+
+    player_name = input('Input player name: ')
+
+    player = Client(player_name)
+    player.establish_connection()
+    player.poll_until_other_player_connected()
+    player.poll_until_turn()
+
+    while True:
+        if player.poll_until_turn():
+            try:
+                player.display_board()
+                print('Board updated. Your turn.')
+                column = select_column()
+                game_status = player.drop_disk(column)
+                print(game_status['game_board'])
+
+                if game_status['winner'] == player.player_id:
+                    print('You won. Congratulations!!')
+                    break
+            except Exception as e:
+                print('Invalid column: ' + str(e))
+
+        print('Game finished...')
+
+
 if __name__ == '__main__':
 
-    player_1 = Client('Kieran')
-    player_1.establish_connection()
-    # player_2 = Client('Lyons')
-    # player_2.establish_connection()
-    player_1.poll_until_other_player_connected()
-    player_1.poll_until_turn()
-    # pprint(player_1.get_game_status())
-    #
-    while True:
-        player_1.poll_until_turn()
-        try:
-            player_1.display_board()
-            print('Board updated. Your turn.')
-            column = select_column()
-            board = player_1.drop_disk(column)['game_board']
-            print(board)
-        except Exception as e:
-            print('Invalid column: ' + str(e))
+    play = True
+    while play:
+        print('Starting new game...')
+        start_game()
+
+        play_again = input("Would you like to play again? y/n: ")
+        play = False if play_again != 'y' else True
+
+
 
 
 
