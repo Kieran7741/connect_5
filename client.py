@@ -2,7 +2,7 @@ import os
 import requests
 from retrying import retry
 from pprint import pprint
-from time import time
+import time
 
 HOST = 'http://127.0.0.1:5000'
 API_PREFIX = '{host}/api/v1/'.format(host=HOST)
@@ -96,33 +96,70 @@ class Client:
         if res.status_code == 200:
             return res.json()
 
+    def poll_until_turn(self):
+        """
+        Poll game status every 5 seconds until clients turn.
+        If opponent does not respond within 60 seconds then client wins.
+        :return: Opponent made turn
+        :rtype: bool
+        """
+
+        start_time = time.time()
+
+        while True:
+            print(f'Waiting for opponent: {60 - (time.time() - start_time)} seconds remaining')
+            if self.get_game_status()['player_turn'] == self.player_id:
+                break
+            time.sleep(5)
+            if time.time() - start_time > 60:
+                print('Opponent player took to long to respond. You are the winner.')
+                return False
+        return True
+
+    def display_board(self):
+        """
+        Display game board
+        """
+
+        print(self.get_game_status()['game_board'] + '\n')
+
+
+def select_column():
+    """
+    Ask client to select a column.
+
+    :return: Selected column
+    :rtype: int
+    """
+    print('You have 60 seconds to make a more or you loss the game.')
+    while True:
+        try:
+            column = int(input('Select Column (1-9): ')) - 1
+            return column
+        except ValueError:
+            print('Please enter an integer')
+
 
 if __name__ == '__main__':
 
     player_1 = Client('Kieran')
     player_1.establish_connection()
-    player_2 = Client('Lyons')
-    player_2.establish_connection()
+    # player_2 = Client('Lyons')
+    # player_2.establish_connection()
     player_1.poll_until_other_player_connected()
+    player_1.poll_until_turn()
+    # pprint(player_1.get_game_status())
+    #
+    while True:
+        player_1.poll_until_turn()
+        try:
+            player_1.display_board()
+            print('Board updated. Your turn.')
+            column = select_column()
+            board = player_1.drop_disk(column)['game_board']
+            print(board)
+        except Exception as e:
+            print('Invalid column: ' + str(e))
 
-    pprint(player_1.get_game_status())
-
-    board = player_1.drop_disk(0)['game_board']
-    print(board)
-
-    board = player_2.drop_disk(0)['game_board']
-    print(board)
-
-    board = player_1.drop_disk(0)['game_board']
-    print(board)
-
-    board = player_2.drop_disk(0)['game_board']
-    print(board)
-
-    board = player_1.drop_disk(1)['game_board']
-    print(board)
-
-    board = player_2.drop_disk(6)['game_board']
-    print(board)
 
 
