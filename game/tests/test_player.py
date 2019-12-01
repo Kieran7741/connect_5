@@ -16,4 +16,3 @@ class TestPlayer(unittest.TestCase):
         self.assertEqual('Kieran', player_details['player_name'])
         self.assertEqual('X', player_details['disc'])
         self.assertTrue(isinstance(player_details['player_id'], str))
-

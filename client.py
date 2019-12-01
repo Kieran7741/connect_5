@@ -26,7 +26,7 @@ class Client:
         self.player_id = None
         self.game_id = None
         self.game_state = None
-        self.disk = None
+        self.disc = None
         self.winner = None
 
     def establish_connection(self):
@@ -44,7 +44,7 @@ class Client:
             self.game_id = response_json['game_id']
             player = response_json['player']
             self.player_id = player['player_id']
-            self.disk = player['disk']
+            self.disc = player['disc']
             print('Successfully established connection to server')
             return True
 
@@ -84,15 +84,15 @@ class Client:
         else:
             raise Exception(f'Could not read game status: {res.status_code}')
 
-    def drop_disk(self, col):
+    def drop_disc(self, col):
         """
-        Drop disk into the specified column
+        Drop disc into the specified column
         :param col: Column number
         :return: Json response from server
         """
 
-        drop_disk_body = {'game_id': self.game_id, 'player_id': self.player_id, 'column': col, 'disk': self.disk }
-        res = make_request_to_server('drop_disk', method='POST', body=drop_disk_body)
+        drop_disc_body = {'game_id': self.game_id, 'player_id': self.player_id, 'column': col, 'disc': self.disc}
+        res = make_request_to_server('drop_disc', method='POST', body=drop_disc_body)
         if res.status_code == 200:
             response_json = res.json()
             # Update game state and winner status
@@ -166,7 +166,7 @@ def start_game():
                 player.display_board()
                 print('Board updated. Your turn.')
                 column = select_column()
-                player.drop_disk(column)
+                player.drop_disc(column)
                 player.display_board()
                 if player.game_state == 'WINNER':
                     break

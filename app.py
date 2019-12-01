@@ -1,13 +1,18 @@
-from flask import Flask, jsonify, abort, request
+from flask import Flask, jsonify, abort, request, make_response
 
 from game.game_session import GameSession
 
 API_PREFIX = '/api/v1'
 
-app = Flask(__name__)
-
 MAX_GAME_SESSIONS = 10
 game_sessions = [GameSession() for _ in range(MAX_GAME_SESSIONS)]  # In memory GameSessions
+
+app = Flask(__name__)
+
+
+@app.errorhandler(400)
+def error_handler(error):
+    return make_response(jsonify({'message': error.description}), 400)
 
 
 @app.route(API_PREFIX + '/connect/<player_name>')
@@ -23,7 +28,7 @@ def connect_to_game(player_name):
         game_session, player = connect_player_to_game(player_name)
         return jsonify({'player': player.player_details(), 'game_id': game_session.game_id})
     except Exception as e:
-        return abort(400, e)
+        return abort(400, str(e))
 
 
 @app.route(API_PREFIX + '/game_status/<game_id>')
@@ -31,7 +36,6 @@ def get_game_status(game_id):
     try:
         return jsonify(get_game_session(game_id).game_details())
     except Exception as e:
-        print(e)
         return abort(400, f'Could not read game status for {game_id}: {e}')
 
 
@@ -44,8 +48,10 @@ def opponent_joined(game_id):
     :return: Json containing opponent key indicating if opponent has connected
     :rtype: flask.Response
     """
-
-    return jsonify({'opponent': not get_game_session(game_id).waiting_for_players})
+    try:
+        return jsonify({'opponent': not get_game_session(game_id).waiting_for_players})
+    except Exception as e:
+        abort(400, str(e))
 
 
 @app.route(API_PREFIX + '/drop_disc', methods=['POST'])
@@ -64,7 +70,6 @@ def drop_disc():
 
         return jsonify(game_session.game_details())
     except Exception as e:
-        print("Error: " + str(e))
         return abort(400, e)
 
 

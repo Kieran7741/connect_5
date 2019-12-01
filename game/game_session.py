@@ -30,7 +30,7 @@ class Board:
     def drop_disc(self, col, disc):
         """
         Drop disc into board.
-        :param col: Column number to drop disk
+        :param col: Column number to drop disc
         :type col: int
         :param disc: Disc to drop
         :type disc: str
@@ -133,9 +133,10 @@ class GameSession:
     PlAYER_2_DISC = 'O'
 
     def __init__(self):
-        self.game_id = uuid4()
+        self.game_id = str(uuid4())
         self.player_1 = None
         self.player_2 = None
+        self.players = []
         self.board = Board([self.PlAYER_1_DISC, self.PlAYER_2_DISC])
         self.winner = None
 
@@ -156,30 +157,36 @@ class GameSession:
         :type player_name: str
         :return: Player added
         """
-        if not self.player_1:
-            self.player_1 = Player(player_name, self.PlAYER_1_DISC)
-            return self.player_1
-        elif not self.player_2:
-            if self.player_1.player_name != player_name:
-                self.player_2 = Player(player_name, self.PlAYER_2_DISC)
-                self.STATE = 'READY'
-                return self.player_2
+
+        if self.waiting_for_players:
+            if not self.player_1:
+                print('Player 1 added')
+                self.player_1 = Player(player_name, self.PlAYER_1_DISC)
+                self.players.append(self.player_1)
+                return self.player_1
             else:
-                raise Exception(f'Name: {player_name} already in use.')
+                if self.player_1.player_name != player_name:
+                    self.player_2 = Player(player_name, self.PlAYER_2_DISC)
+                    self.players.append(self.player_2)
+                    print('Player 2 added')
+                    self.STATE = 'READY'
+                    return self.player_2
+                else:
+                    raise Exception(f'Name: {player_name} already in use.')
+        else:
+            raise Exception('All players already added.')
 
     def game_details(self):
         """
         Return game details
         :return: Game details
+        :rtype: dict
         """
-        if not self.waiting_for_players:
-            return {'game_id': self.game_id, 'state': self.STATE, 'players': [self.player_1.player_details(),
-                                                                              self.player_2.player_details()],
-                    'game_board': str(self.board), 'player_turn': self.next_player_turn(),
-                    'winner': self.winner}
-        else:
-            # Game has not started
-            return {'game_id': self.game_id, 'state': self.STATE}
+        player_details = [player.player_details() for player in self.players]
+        player_turn = None if self.waiting_for_players else self.next_player_turn()
+
+        return {'game_id': self.game_id, 'state': self.STATE, 'players': player_details,
+                'game_board': str(self.board), 'player_turn':  player_turn, 'winner': self.winner}
 
     def next_player_turn(self):
         """
@@ -198,9 +205,7 @@ class GameSession:
 
     def check_for_winner(self):
         """
-        Check for winner get winners id
-        :return: Winners id if winner found else blank string
-        :rtype: str
+        Check for winner and update game state
         """
         winning_disc = self.board.check_for_winner()
 
