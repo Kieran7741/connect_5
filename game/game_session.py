@@ -129,32 +129,41 @@ class Board:
 class GameSession:
 
     STATE = 'WAITING FOR PLAYERS'
-    PLAYER_1, PlAYER_1_DISC = None, 'X'
-    PLAYER_2, PlAYER_2_DISC = None, 'O'
+    PlAYER_1_DISC = 'X'
+    PlAYER_2_DISC = 'O'
 
     def __init__(self):
-        self.game_id = '123'  # uuid4()
+        self.game_id = uuid4()
+        self.player_1 = None
+        self.player_2 = None
         self.board = Board([self.PlAYER_1_DISC, self.PlAYER_2_DISC])
         self.winner = None
 
     @property
     def waiting_for_players(self):
-        return not (self.PLAYER_1 and self.PLAYER_2)
+        """
+        Waiting for players to join?
+        :return: True if waiting for players
+        :rtype: bool
+        """
+
+        return not (self.player_1 and self.player_2)
 
     def add_player(self, player_name):
         """
         Add player to game session
         :param player_name: Name of player to add.
+        :type player_name: str
         :return: Player added
         """
-        if not self.PLAYER_1:
-            self.PLAYER_1 = Player(player_name, 'X')
-            return self.PLAYER_1
-        elif not self.PLAYER_2:
-            if self.PLAYER_1.player_name != player_name:
-                self.PLAYER_2 = Player(player_name, 'O')
+        if not self.player_1:
+            self.player_1 = Player(player_name, self.PlAYER_1_DISC)
+            return self.player_1
+        elif not self.player_2:
+            if self.player_1.player_name != player_name:
+                self.player_2 = Player(player_name, self.PlAYER_2_DISC)
                 self.STATE = 'READY'
-                return self.PLAYER_2
+                return self.player_2
             else:
                 raise Exception(f'Name: {player_name} already in use.')
 
@@ -164,8 +173,8 @@ class GameSession:
         :return: Game details
         """
         if not self.waiting_for_players:
-            return {'game_id': self.game_id, 'state': self.STATE, 'players': [self.PLAYER_1.player_details(),
-                                                                              self.PLAYER_2.player_details()],
+            return {'game_id': self.game_id, 'state': self.STATE, 'players': [self.player_1.player_details(),
+                                                                              self.player_2.player_details()],
                     'game_board': str(self.board), 'player_turn': self.next_player_turn(),
                     'winner': self.winner}
         else:
@@ -182,10 +191,10 @@ class GameSession:
 
         last_disc = self.board.last_disc
         if last_disc:
-            return self.PLAYER_2.player_id if self.PLAYER_1.disc == last_disc else self.PLAYER_1.player_id
+            return self.player_2.player_id if self.player_1.disc == last_disc else self.player_1.player_id
 
         # No player has made a move yet
-        return self.PLAYER_1.player_id
+        return self.player_1.player_id
 
     def check_for_winner(self):
         """
@@ -197,6 +206,6 @@ class GameSession:
 
         if winning_disc:
             self.STATE = 'WINNER'
-            self.winner = self.PLAYER_1.player_id if winning_disc == self.PLAYER_1.disc else self.PLAYER_2.player_id
+            self.winner = self.player_1.player_id if winning_disc == self.player_1.disc else self.player_2.player_id
 
 
