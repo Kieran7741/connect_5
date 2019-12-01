@@ -81,7 +81,7 @@ def drop_disc():
         game_session = get_game_session(drop_data['game_id'])
 
         if not game_session.next_player_turn() == drop_data['player_id']:
-            raise Exception(f'Wait your turn client: {drop_data["player_id"]}')
+            raise Exception(f'It is not your turn: {drop_data["player_id"]}')
 
         game_session.board.drop_disc(drop_data['column'], drop_data['disc'])
         game_session.check_for_winner()
