@@ -12,6 +12,7 @@ app = Flask(__name__)
 
 @app.errorhandler(400)
 def error_handler(error):
+    """Build json response message for 400 errors"""
     return make_response(jsonify({'message': error.description}), 400)
 
 
@@ -19,7 +20,9 @@ def error_handler(error):
 def connect_to_game(player_name):
     """
     Provide a player with a session
+
     :param player_name: player_name
+    :type player_name: str
     :return: Game session information if connection successful
     :rtype: flask.Response
     """
@@ -33,6 +36,15 @@ def connect_to_game(player_name):
 
 @app.route(API_PREFIX + '/game_status/<game_id>')
 def get_game_status(game_id):
+    """
+    Get status for game_id
+
+    :param game_id: Game to check status of
+    :type game_id: str
+    :return: Game status
+    :rtype: flask.Response
+    """
+
     try:
         return jsonify(get_game_session(game_id).game_details())
     except Exception as e:
@@ -44,7 +56,8 @@ def opponent_joined(game_id):
     """
     Check if both players have joined the game
 
-    :param game_id:
+    :param game_id: Game to check
+    :type game_id: str
     :return: Json containing opponent key indicating if opponent has connected
     :rtype: flask.Response
     """
@@ -56,9 +69,14 @@ def opponent_joined(game_id):
 
 @app.route(API_PREFIX + '/drop_disc', methods=['POST'])
 def drop_disc():
+    """
+    Drop disc into game board.
+
+    :return: Game status after disk dropped.
+    :rtype: flask.Response
+    """
 
     drop_data = request.json
-    print(drop_data)
     try:
         game_session = get_game_session(drop_data['game_id'])
 
@@ -76,8 +94,11 @@ def drop_disc():
 def connect_player_to_game(player_name):
     """
     Get a players game session.
+
     :param player_name: Name of player
     :return: GameSession object and connected player object
+    :rtype: tuple
+    :raises Exception: if no available sessions
     """
 
     for session in game_sessions[:]:
@@ -90,6 +111,7 @@ def connect_player_to_game(player_name):
 def get_game_session(session_id):
     """
     Get game session by id
+
     :param session_id: Game session to search for
     :return: Matched GameSession
     :rtype: game.game_session.GameSession
