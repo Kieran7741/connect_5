@@ -48,8 +48,8 @@ def opponent_joined(game_id):
     return jsonify({'opponent': not get_game_session(game_id).waiting_for_players})
 
 
-@app.route(API_PREFIX + '/drop_disk', methods=['POST'])
-def drop_disk():
+@app.route(API_PREFIX + '/drop_disc', methods=['POST'])
+def drop_disc():
 
     drop_data = request.json
     print(drop_data)
@@ -59,7 +59,7 @@ def drop_disk():
         if not game_session.next_player_turn() == drop_data['player_id']:
             raise Exception(f'Wait your turn client: {drop_data["player_id"]}')
 
-        game_session.board.drop_disk(drop_data['column'], drop_data['disk'])
+        game_session.board.drop_disc(drop_data['column'], drop_data['disc'])
         game_session.check_for_winner()
 
         return jsonify(game_session.game_details())

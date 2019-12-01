@@ -5,48 +5,55 @@ from numpy import transpose, array, diagonal, flip
 
 class Player:
 
-    def __init__(self, player_name, disk):
+    def __init__(self, player_name, disc):
         self.player_name = player_name
-        self.disk = disk
+        self.disc = disc
         self.player_id = str(uuid4())
 
     def player_details(self):
 
-        return {'player_name': self.player_name, 'player_id': self.player_id, 'disk': self.disk}
+        return {'player_name': self.player_name, 'player_id': self.player_id, 'disc': self.disc}
 
 
 class Board:
 
-    LAST_COUNTER = None
+    COLUMNS = 9
+    ROWS = 6
 
-    def __init__(self, cols, rows, valid_disks):
-        self.cols = cols
-        self.rows = rows
-        self.valid_disks = valid_disks
-        self.board_matrix = array([['_'] * self.rows for _ in range(self.cols)])
+    def __init__(self, valid_discs):
+
+        self.valid_discs = valid_discs
+        self.board_matrix = array([['_'] * self.ROWS for _ in range(self.COLUMNS)])
         self.turns = 0
+        self.last_disc = None
 
-    def drop_disk(self, col, disk):
+    def drop_disc(self, col, disc):
         """
-        Drop disk into board.
-        :param col:
-        :param disk:
-        :return:
+        Drop disc into board.
+        :param col: Column number to drop disk
+        :type col: int
+        :param disc: Disc to drop
+        :type disc: str
+        :raises Exception: If incorrect drop conditions provided.
         """
 
-        if disk not in self.valid_disks or disk == self.LAST_COUNTER:
-            raise Exception(f'Invalid disk: {disk}.')
-        try:
-            insert_index = ''.join(self.board_matrix[col]).rindex('_')
-            self.board_matrix[col][insert_index] = disk
-            self.LAST_COUNTER = disk
-        except ValueError:
-            raise ValueError('No space left in that column')
+        if disc not in self.valid_discs or disc == self.last_disc:
+            raise Exception(f'Invalid disc: {disc}')
+
+        if col in range(self.COLUMNS):
+            try:
+                insert_index = ''.join(self.board_matrix[col]).rindex('_')
+                self.board_matrix[col][insert_index] = disc
+                self.last_disc = disc
+            except ValueError:
+                raise Exception(f'No space left in column: {col}')
+        else:
+            raise Exception(f'Invalid column: {col}')
 
     def check_for_winner(self):
         """
         Check for vertical, horizontal or diagonal 5 in a row.
-        :return: Winning disk if winner found else None
+        :return: Winning disc if winner found else None
         :rtype: str or None
         """
 
@@ -71,7 +78,7 @@ class Board:
         for diag in diagonals:
             winner = self.check_if_line_has_five_in_a_row(list(diag))
             if winner:
-                print('Winner by connecting a col')
+                print('Winner by connecting a diagonal')
                 return winner
 
     def check_rows_and_cols(self):
@@ -84,7 +91,7 @@ class Board:
         for col in self.board_matrix:
             winner = self.check_if_line_has_five_in_a_row(list(col))
             if winner:
-                print('Winner by connecting a col')
+                print('Winner by connecting a column')
                 return winner
 
         for row in transpose(self.board_matrix):
@@ -95,18 +102,18 @@ class Board:
 
     def check_if_line_has_five_in_a_row(self, line):
         """
-        Check each list for 5 consecutive disks.
+        Check each list for 5 consecutive discs.
         If the line contains 'XXXXX' or 'OOOOO' then we have a winner.
 
-        :param line: line of disks to check.
+        :param line: line of discs to check.
         :type line: list
-        :return: Winning disk if winner found else None
+        :return: Winning disc if winner found else None
         :rtype: str or None
         """
 
         line_as_string = ''.join(line)
 
-        for disc in self.valid_disks:
+        for disc in self.valid_discs:
             if disc*5 in line_as_string:
                 return disc
 
@@ -122,12 +129,12 @@ class Board:
 class GameSession:
 
     STATE = 'WAITING FOR PLAYERS'
-    PLAYER_1, PlAYER_1_COUNTER = None, 'X'
-    PLAYER_2, PlAYER_2_COUNTER = None, 'O'
+    PLAYER_1, PlAYER_1_DISC = None, 'X'
+    PLAYER_2, PlAYER_2_DISC = None, 'O'
 
     def __init__(self):
         self.game_id = '123'  # uuid4()
-        self.board = Board(9, 6, [self.PlAYER_1_COUNTER, self.PlAYER_2_COUNTER])
+        self.board = Board([self.PlAYER_1_DISC, self.PlAYER_2_DISC])
         self.winner = None
 
     @property
@@ -167,15 +174,15 @@ class GameSession:
 
     def next_player_turn(self):
         """
-        Determine the next player to drop a disk
+        Determine the next player to drop a disc
 
         :return: Player ID of next player
         :rtype: str
         """
 
-        last_disk = self.board.LAST_COUNTER
-        if last_disk:
-            return self.PLAYER_2.player_id if self.PLAYER_1.disk == last_disk else self.PLAYER_1.player_id
+        last_disc = self.board.last_disc
+        if last_disc:
+            return self.PLAYER_2.player_id if self.PLAYER_1.disc == last_disc else self.PLAYER_1.player_id
 
         # No player has made a move yet
         return self.PLAYER_1.player_id
@@ -190,6 +197,6 @@ class GameSession:
 
         if winning_disc:
             self.STATE = 'WINNER'
-            self.winner = self.PLAYER_1.player_id if winning_disc == self.PLAYER_1.disk else self.PLAYER_2.player_id
+            self.winner = self.PLAYER_1.player_id if winning_disc == self.PLAYER_1.disc else self.PLAYER_2.player_id
 
 
