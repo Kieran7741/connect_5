@@ -31,7 +31,7 @@ class Client:
         self.disc = None
         self.winner = None
 
-    @retry(retry_on_exception=lambda e: isinstance(e, Exception), wait_fixed=1000, stop_max_attempt_number=12)
+    @retry(retry_on_exception=lambda e: isinstance(e, Exception), wait_fixed=5000, stop_max_attempt_number=12)
     def establish_connection(self):
         """
         Establish connection to Game session. Max attempts is 12
