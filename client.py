@@ -10,11 +10,13 @@ API_PREFIX = '{host}/api/v1/'.format(host=HOST)
 def make_request_to_server(endpoint, method='GET', body=None):
     """
     Send request to Connect_5 server
-    :param endpoint:
-    :param method:
-    :param body:
-    :return:
+    :param endpoint: Target endpoint
+    :param method: Request method
+    :param body: Request body
+    :return: Response
+    :rtype: requests.Response
     """
+
     url = os.path.join(API_PREFIX, endpoint)
     return requests.get(url) if method == 'GET' else requests.post(url, json=body)
 
@@ -29,6 +31,7 @@ class Client:
         self.disc = None
         self.winner = None
 
+    @retry(retry_on_exception=lambda e: isinstance(e, Exception), wait_fixed=1000, stop_max_attempt_number=12)
     def establish_connection(self):
         """
         Establish connection to Game session
@@ -36,9 +39,8 @@ class Client:
         :return: Connection successful
         :rtype: bool
         """
-
+        print('Attempting to connect to server...')
         res = make_request_to_server(f'connect/{self.player_name}')
-        print(res.status_code)
         if res.status_code == 200:
             response_json = res.json()
             self.game_id = response_json['game_id']
@@ -82,12 +84,13 @@ class Client:
         if res.status_code == 200:
             return res.json()
         else:
-            raise Exception(f'Could not read game status: {res.status_code}')
+            raise Exception(f'Could not read game status: {res.json()["message"]}')
 
     def drop_disc(self, col):
         """
         Drop disc into the specified column
         :param col: Column number
+        :type col: int
         :return: Json response from server
         """
 
@@ -152,44 +155,54 @@ def select_column():
 
 
 def start_game():
+    """
+    Start game of connect 5
+    """
+
+    play = True
 
     player_name = input('Input player name: ')
 
-    player = Client(player_name)
-    player.establish_connection()
-    player.poll_until_other_player_connected()
-    player.poll_until_turn()
-
-    while True:
-        if player.poll_until_turn():
-            try:
-                player.display_board()
-                print('Board updated. Your turn.')
-                column = select_column()
-                player.drop_disc(column)
-                player.display_board()
-                if player.game_state == 'WINNER':
-                    break
-            except Exception as e:
-                print('Invalid column: ' + str(e))
-        elif player.game_state == 'WINNER':
+    while play:
+        player = Client(player_name)
+        player.establish_connection()
+        try:
+            player.poll_until_other_player_connected()
+        except Exception as e:
+            print(e)
             break
 
-    if player.player_id == player.winner:
-        print('You won. Congratulations!!!')
-    else:
-        print('You lost.')
+        player.poll_until_turn()
 
+        while True:
+            if player.poll_until_turn():
+                try:
+                    player.display_board()
+                    print('Board updated. Your turn.')
+                    column = select_column()
+                    player.drop_disc(column)
+                    player.display_board()
+                    if player.game_state == 'WINNER':
+                        break
+                except Exception as e:
+                    print('Invalid column: ' + str(e))
+            elif player.game_state == 'WINNER':
+                break
 
-if __name__ == '__main__':
+        if player.player_id == player.winner:
+            print('You won. Congratulations!!!')
+        else:
+            print('You lost.')
 
-    play = True
-    while play:
-        print('Starting new game...')
-        start_game()
         play_again = input("Would you like to play again? y/n: ")
         play = False if play_again != 'y' else True
 
+
+if __name__ == '__main__':
+    try:
+        start_game()
+    except Exception as e:
+        print(f'Game exited unexpectedly: {e}')
 
 
 
