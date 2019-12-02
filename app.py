@@ -16,7 +16,7 @@ def error_handler(error):
     return make_response(jsonify({'message': error.description}), 400)
 
 
-@app.route(API_PREFIX + '/connect/<player_name>')
+@app.route('/api/v1/connect/<player_name>')
 def connect_to_game(player_name):
     """
     Provide a player with a session
@@ -34,7 +34,7 @@ def connect_to_game(player_name):
         return abort(400, str(e))
 
 
-@app.route(API_PREFIX + '/game_status/<game_id>')
+@app.route('/api/v1/game_status/<game_id>')
 def get_game_status(game_id):
     """
     Get status for game_id
@@ -51,7 +51,7 @@ def get_game_status(game_id):
         return abort(400, f'Could not read game status for {game_id}: {e}')
 
 
-@app.route(API_PREFIX + '/opponent/joined/<game_id>')
+@app.route('/api/v1/opponent/joined/<game_id>')
 def opponent_joined(game_id):
     """
     Check if both players have joined the game
@@ -67,7 +67,7 @@ def opponent_joined(game_id):
         abort(400, str(e))
 
 
-@app.route(API_PREFIX + '/drop_disc', methods=['POST'])
+@app.route('/api/v1/drop_disc', methods=['POST'])
 def drop_disc():
     """
     Drop disc into game board.
