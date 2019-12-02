@@ -9,7 +9,7 @@ API_PREFIX = '{host}/api/v1/'.format(host=HOST)
 
 def make_request_to_server(endpoint, method='GET', body=None):
     """
-    Send request to Connect_5 server
+    Send request to Connect_5 server. Note if request fails for conneciton error, error will be raised.
     :param endpoint: Target endpoint
     :param method: Request method
     :param body: Request body
@@ -34,7 +34,7 @@ class Client:
     @retry(retry_on_exception=lambda e: isinstance(e, Exception), wait_fixed=1000, stop_max_attempt_number=12)
     def establish_connection(self):
         """
-        Establish connection to Game session
+        Establish connection to Game session. Max attempts is 12
 
         :return: Connection successful
         :rtype: bool
@@ -71,6 +71,7 @@ class Client:
         print('Still waiting on opponent. Sleeping for 5 seconds.')
         raise Exception('No opponent joined within the timeout of 60 seconds.')
 
+    @retry(retry_on_exception=lambda e: isinstance(e, Exception), wait_fixed=5000, stop_max_attempt_number=12)
     def get_game_status(self):
         """
         Query server for game status
@@ -78,7 +79,7 @@ class Client:
         :return: Json response
         :rtype: dict
         """
-
+        print('Getting game status...')
         res = make_request_to_server(f'game_status/{self.game_id}')
 
         if res.status_code == 200:
@@ -101,6 +102,10 @@ class Client:
             # Update game state and winner status
             self.winner = response_json['winner']
             self.game_state = response_json['state']
+        elif res.status_code == 400:
+            # Most likely a invalid column
+            raise Exception(res.json()['message'])
+
 
     def poll_until_turn(self):
         """

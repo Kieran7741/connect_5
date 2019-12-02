@@ -34,10 +34,13 @@ class TestClient(unittest.TestCase):
         self.assertEqual(self.client.player_id, '456')
 
     @patch('time.sleep')
+    @patch('client.make_request_to_server', side_effect=Exception)
+    def test_establish_connection__cannot_connect(self, *__):
+      
+        self.assertRaises(Exception, self.client.establish_connection)
+
     @patch('client.make_request_to_server')
-    def test_establish_connection__cannot_connect(self, mock_make_request, _):
-        mock_response = Mock(status_code=400)
+    def test_get_game_status(self, mock_make_request):
+        mock_response = Mock(status_code=200)
         mock_response.json.return_value = {'game_id': '123', 'player': {'player_id': '456', 'disc': 'X'}}
         mock_make_request.return_value = mock_response
-
-        self.assertRaises(Exception, self.client.establish_connection)
