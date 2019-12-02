@@ -71,6 +71,25 @@ class TestClient(unittest.TestCase):
         self.assertEqual('Invalid column: 5' , str(e.exception))
 
     @patch('builtins.print')
+    @patch('client.make_request_to_server')
+    def test_poll_until_other_player_connected__other_player_joined(self, mock_make_request, _):
+        mock_response = Mock(status_code=200)
+        mock_response.json.return_value = {'opponent': True}
+        mock_make_request.return_value = mock_response
+
+        self.assertTrue(self.client.poll_until_other_player_connected())
+
+    @patch('time.sleep')
+    @patch('builtins.print')
+    @patch('client.make_request_to_server')
+    def test_poll_until_other_player_connected(self, *_):
+
+        with self.assertRaises(Exception) as e:
+            self.client.poll_until_other_player_connected()
+        
+        self.assertEqual('No opponent joined within the timeout of 60 seconds.', str(e.exception))
+        
+    @patch('builtins.print')
     @patch('time.time', side_effect=[0, 1])
     @patch('client.Client.get_game_status', return_value={'state': 'PLAYING', 'winner': None, 'player_turn': '123'})
     def test_poll_until_turn__clients_turn(self, *_):

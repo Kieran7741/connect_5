@@ -64,7 +64,6 @@ class Client:
 
         if res.status_code == 200:
             response_json = res.json()
-            print(response_json)
             if response_json['opponent']:
                 print('Opponent joined.')
                 return True
