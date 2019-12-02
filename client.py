@@ -111,7 +111,7 @@ class Client:
         """
         Poll game status every 5 seconds until clients turn.
         If opponent does not respond within 60 seconds then client wins.
-        :return: Opponent made turn
+        :return: Clients turn, false if game state is WINNER or opponent timmed out. 
         :rtype: bool
         """
 
@@ -130,7 +130,7 @@ class Client:
                 return True
             time.sleep(5)
             if time.time() - start_time > 60:
-                print('Opponent player took to long to respond. You are the winner.')
+                print('Opponent took to long to respond. You are the winner.')
                 self.winner = self.player_id
                 self.game_state = 'WINNER'
                 return False
