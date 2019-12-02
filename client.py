@@ -190,7 +190,7 @@ def start_game():
                     if player.game_state == 'WINNER':
                         break
                 except Exception as e:
-                    print('Invalid column: ' + str(e))
+                    print('Something went wrong: ' + str(e))
             elif player.game_state == 'WINNER':
                 break
 

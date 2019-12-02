@@ -40,7 +40,31 @@ class TestClient(unittest.TestCase):
         self.assertRaises(Exception, self.client.establish_connection)
 
     @patch('client.make_request_to_server')
-    def test_get_game_status(self, mock_make_request):
+    def test_drop_disc__no_winner_after_drop(self, mock_make_request):
         mock_response = Mock(status_code=200)
-        mock_response.json.return_value = {'game_id': '123', 'player': {'player_id': '456', 'disc': 'X'}}
+        mock_response.json.return_value = {'game_id': '123', 'winner': None, 'state': 'PLAYING'}
         mock_make_request.return_value = mock_response
+        self.client.drop_disc(5)
+        self.assertIsNone(self.client.winner)
+        self.assertEqual(self.client.game_state, 'PLAYING')
+
+    @patch('client.make_request_to_server')
+    def test_drop_disc__winner_after_drop(self, mock_make_request):
+        mock_response = Mock(status_code=200)
+        mock_response.json.return_value = {'game_id': '123', 'winner': '456', 'state': 'WINNER'}
+        mock_make_request.return_value = mock_response
+        self.client.player_id = '456'
+        self.client.drop_disc(5)
+        self.assertEqual(self.client.winner , '456')
+        self.assertEqual(self.client.game_state, 'WINNER')
+    
+    @patch('client.make_request_to_server')
+    def test_drop_disc__invalid_column(self, mock_make_request):
+        mock_response = Mock(status_code=400)
+        mock_response.json.return_value = {'message': 'Invalid column: 5'}
+        mock_make_request.return_value = mock_response
+        with self.assertRaises(Exception) as e:
+            self.client.drop_disc(5)
+
+        self.assertEqual('Invalid column: 5' , str(e.exception))
+
