@@ -153,7 +153,10 @@ def select_column():
     while True:
         try:
             column = int(input('Select Column (1-9): ')) - 1
-            return column
+            if column in range(8):
+                return column
+            else:
+                print(f'Invalid range: {column+1} not in range (1-9)')
         except ValueError:
             print('Please enter an integer')
 
