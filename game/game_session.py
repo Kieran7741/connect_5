@@ -195,7 +195,6 @@ class GameSession:
         :return: Player ID of next player
         :rtype: str
         """
-
         last_disc = self.board.last_disc
         if last_disc:
             return self.player_2.player_id if self.player_1.disc == last_disc else self.player_1.player_id

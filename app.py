@@ -48,7 +48,7 @@ def get_game_status(game_id):
     try:
         return jsonify(get_game_session(game_id).game_details())
     except Exception as e:
-        return abort(400, f'Could not read game status for {game_id}: {e}')
+        return abort(400, f'Could not find game session for {game_id}: {e}')
 
 
 @app.route('/api/v1/opponent/joined/<game_id>')
@@ -79,7 +79,6 @@ def drop_disc():
     drop_data = request.json
     try:
         game_session = get_game_session(drop_data['game_id'])
-
         if not game_session.next_player_turn() == drop_data['player_id']:
             raise Exception(f'It is not your turn: {drop_data["player_id"]}')
 
