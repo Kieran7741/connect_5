@@ -1,5 +1,4 @@
-from client import Client, make_request_to_server, select_column
-
+from client import Client, make_request_to_server, select_column, start_game, create_client
 
 import unittest
 from unittest.mock import Mock, patch
@@ -142,3 +141,56 @@ class TestClient(unittest.TestCase):
         
         self.assertEqual(select_column(), 5)
         mock_print.assert_called_with('Please enter an integer')
+
+    @patch('client.Client.establish_connection')
+    @patch('client.Client.poll_until_other_player_connected',
+           side_effect=Exception('No opponent joined within the timeout of 60 seconds.'))
+    @patch('builtins.input', return_value='Kieran')
+    def test_start_game__opponent_did_not_join(self, *_):
+
+        with self.assertRaises(Exception) as e:
+            start_game()
+            self.assertEqual('No opponent joined within the timeout of 60 seconds.', str(e.exception))
+
+    @patch('client.select_column')
+    @patch('builtins.input', return_value='Kieran')
+    @patch('client.Client.establish_connection')
+    @patch('client.Client.poll_until_other_player_connected')
+    @patch('client.Client.display_board')
+    @patch('client.Client.drop_disc')
+    @patch('client.Client.poll_until_turn')
+    @patch('client.create_client')
+    @patch('builtins.print')
+    def test_start_game__player_win(self, mock_print, mock_client, *_):
+        self.client.game_state = 'WINNER'
+        self.client.winner = self.client.player_id
+        mock_client.return_value = self.client
+
+        start_game()
+        mock_print.assert_called_with('You won. Congratulations!!!')
+
+    @patch('builtins.input', return_value='Kieran')
+    def test_create_client(self, _):
+
+        client = create_client()
+        self.assertEqual(client.player_name, 'Kieran')
+
+    @patch('client.select_column')
+    @patch('builtins.input', return_value='Kieran')
+    @patch('client.Client.establish_connection')
+    @patch('client.Client.poll_until_other_player_connected')
+    @patch('client.Client.display_board')
+    @patch('client.Client.drop_disc')
+    @patch('client.Client.poll_until_turn')
+    @patch('client.create_client')
+    @patch('builtins.print')
+    def test_start_game__player_lost(self, mock_print, mock_client, *_):
+        self.client.game_state = 'WINNER'
+        self.client.winner = '123'
+        mock_client.return_value = self.client
+
+        start_game()
+        mock_print.assert_called_with('You lost.')
+
+if __name__ == '__main__':
+    unittest.main()

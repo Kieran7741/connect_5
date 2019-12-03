@@ -155,6 +155,12 @@ Ensure you are in the root of the project. The below shows the running of test_a
 python -m unittest tests.test_app
 ```
 
+Generate Test coverage report using coverage.py
+
+```commandline
+ coverage run --source=. -m unittest discover -s .
+```
+
 ## Authors
 
 * **Kieran Lyons** - [Kieran7741](https://github.com/Kieran7741)

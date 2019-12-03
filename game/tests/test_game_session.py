@@ -1,7 +1,7 @@
 from game.game_session import GameSession, Player
 
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 
 class TestPlayer(unittest.TestCase):
@@ -36,13 +36,15 @@ class TestPlayer(unittest.TestCase):
 
         self.assertEqual('Name: Kieran already in use.', str(e.exception))
 
-    def test_add_player__add_player_1(self):
+    @patch('builtins.print')
+    def test_add_player__add_player_1(self, _):
 
         self.game_session.player_1 = None
         self.game_session.add_player('Kieran')
         self.assertTrue(self.game_session.player_1.player_name == 'Kieran')
 
-    def test_add_player__add_player_2(self):
+    @patch('builtins.print')
+    def test_add_player__add_player_2(self, _):
 
         self.game_session.player_2 = None
         self.game_session.add_player('John')
@@ -81,4 +83,5 @@ class TestPlayer(unittest.TestCase):
         self.game_session.check_for_winner()
         self.assertIsNone(self.game_session.winner)
 
-
+if __name__ == '__main__':
+    unittest.main()

@@ -49,7 +49,8 @@ class TestBoard(unittest.TestCase):
 
         self.assertIsNone(self.board.check_diagonals())
 
-    def test_check_diagonals__winner(self):
+    @patch('builtins.print')
+    def test_check_diagonals__winner(self, _):
         self.board.board_matrix[0][0] = 'X'
         self.board.board_matrix[1][1] = 'X'
         self.board.board_matrix[2][2] = 'X'
@@ -88,3 +89,6 @@ class TestBoard(unittest.TestCase):
     def test_check_if_line_has_five_in_a_row__no_winner(self):
 
         self.assertIsNone(self.board.check_if_line_has_five_in_a_row(['X', 'X', '_', '_', '_', '_']))
+
+if __name__ == '__main__':
+    unittest.main()

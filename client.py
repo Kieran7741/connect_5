@@ -105,7 +105,6 @@ class Client:
             # Most likely a invalid column
             raise Exception(res.json()['message'])
 
-
     def poll_until_turn(self):
         """
         Poll game status every 5 seconds until clients turn.
@@ -161,6 +160,16 @@ def select_column():
             print('Please enter an integer')
 
 
+def create_client():
+    """
+    Create Client object.
+    :return: Client object with user provided name
+    :rtype: Client
+    """
+    player_name = input('Input player name: ')
+    return Client(player_name)
+
+
 def start_game():
     """
     Start game of connect 5
@@ -168,16 +177,11 @@ def start_game():
 
     play = True
 
-    player_name = input('Input player name: ')
-
     while play:
-        player = Client(player_name)
+        player = create_client()
         player.establish_connection()
-        try:
-            player.poll_until_other_player_connected()
-        except Exception as e:
-            print(e)
-            break
+
+        player.poll_until_other_player_connected()
 
         player.poll_until_turn()
 
@@ -209,7 +213,7 @@ if __name__ == '__main__':
     try:
         start_game()
     except Exception as e:
-        print(f'Game exited unexpectedly: {e}')
+        print(f'Game exited: {e}')
 
 
 

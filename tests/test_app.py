@@ -114,3 +114,7 @@ class TestApp(unittest.TestCase):
         with app.test_request_context(json={'game_id': '555', 'player_id': '456', 'column': 5, 'disc': 'O'}):
             res = drop_disc()
             self.assertEqual(res.status_code, 200)
+
+
+if __name__ == '__main__':
+    unittest.main()
