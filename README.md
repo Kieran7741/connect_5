@@ -1,12 +1,12 @@
 # Connect 5: Multiplayer Flask application
 
-* Coding challenge completed as part of job interview
-* The application uses a server to track the state of a connect 5 game sessions
-* Players(clients) connect to the server and are assigned to an available game session
+* Coding challenge completed as part of a job interview
+* The application uses a server to track the state of a connect 5 game session
+* Players(clients) connect to the server and are assigned to an available game session(10 sessions supported by default)
 * The game starts when two players have joined a game session
 * Players wait for their turn before dropping a disc into the board
 * Players ping the Flask server every 5 seconds to query the state of the game
-* If a player does not take their turn within 60 seconds of the opponent they forfeit the game
+* If a player does not take their turn within 60 seconds of the opponent last turn then they forfeit the game.
 
 ## Getting Started
 
@@ -29,7 +29,7 @@ pip install -r requirements.txt
 
 ### Running
 
-First start the server:
+First start the server: This is a flask server that will run on localhost:5000
 
 ```commandline
 python app.py
@@ -160,6 +160,10 @@ Generate Test coverage report using coverage.py
 ```commandline
  coverage run --source=. -m unittest discover -s .
 ```
+
+### Future Improvements:
+* Implement custom exceptions
+* Introduce logging instead of print statements on server side.
 
 ## Authors
 
