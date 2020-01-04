@@ -123,10 +123,10 @@ class TestClient(unittest.TestCase):
         mock_print.assert_called_with(" ['_' '_' '_' '_' '_' '_' '_' '_' '_']\n ['_' '_' '_' '_' '_' '_' '_' '_' '_']\n ['_' '_' '_' '_' '_' '_' '_' '_' '_']\n ['_' '_' '_' '_' '_' '_' '_' '_' '_']\n ['_' '_' '_' '_' '_' '_' '_' '_' '_']\n ['_' '_' '_' '_' '_' '_' '_' '_' '_']\n\n   1   2   3   4   5   6   7   8   9  \n")
 
     @patch('builtins.print')
-    @patch('builtins.input', return_value='6')
-    def test_select_column(self, *_):
-        
-        self.assertEqual(select_column(), 5)
+    @patch('builtins.input', side_effect=list(range(1, 9)))
+    def test_select_column__valid_inputs(self, *_):
+        for i in range(1, 9):
+            self.assertEqual(select_column(), i - 1)
 
     @patch('builtins.input', side_effect=['100', '6'])
     @patch('builtins.print')
