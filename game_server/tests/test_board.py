@@ -1,4 +1,4 @@
-from game.game_session import Board
+from game_server.game_session import Board
 
 import unittest
 from unittest.mock import patch
@@ -36,12 +36,12 @@ class TestBoard(unittest.TestCase):
             self.board.drop_disc(20, 'X')
         self.assertEqual('Invalid column: 20', str(e.exception))
 
-    @patch('game.game_session.Board.check_rows_and_cols', return_value='X')
+    @patch('game_server.game_session.Board.check_rows_and_cols', return_value='X')
     def test_check_for_winner__winner_found(self, _):
         self.assertEqual('X', self.board.check_for_winner())
 
-    @patch('game.game_session.Board.check_rows_and_cols', return_value=None)
-    @patch('game.game_session.Board.check_diagonals', return_value=None)
+    @patch('game_server.game_session.Board.check_rows_and_cols', return_value=None)
+    @patch('game_server.game_session.Board.check_diagonals', return_value=None)
     def test_check_for_winner__no_winner_found(self, *_):
         self.assertIsNone(self.board.check_for_winner())
 
