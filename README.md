@@ -161,11 +161,26 @@ Generate Test coverage report using coverage.py
   coverage run --source=. -m unittest discover -s .
   coverage report
   coverage html
+  
+  # Sample output:
+  
+    Name                          Stmts   Miss  Cover
+    -------------------------------------------------
+    app.py                            4      4     0%
+    client/__init__.py                0      0   100%
+    client/player.py                116     13    89%
+    game_server/__init__.py           9      0   100%
+    game_server/game.py              41      5    88%
+    game_server/game_session.py     103      0   100%
+    -------------------------------------------------
+    TOTAL                           273     22    92%
+
 ```
 
 ### Future Improvements:
 * Implement custom exceptions
 * Introduce logging instead of print statements on server side.
+* Use database to store game sessions
 
 ## Authors
 
