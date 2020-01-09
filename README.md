@@ -158,7 +158,9 @@ python -m unittest tests.test_app
 Generate Test coverage report using coverage.py
 
 ```commandline
- coverage run --source=. -m unittest discover -s .
+  coverage run --source=. -m unittest discover -s .
+  coverage report
+  coverage html
 ```
 
 ### Future Improvements:

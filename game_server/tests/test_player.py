@@ -1,4 +1,4 @@
-from game.game_session import Player
+from game_server.game_session import Player
 
 import unittest
 

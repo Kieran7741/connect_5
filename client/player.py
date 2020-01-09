@@ -21,7 +21,7 @@ def make_request_to_server(endpoint, method='GET', body=None):
     return requests.get(url) if method == 'GET' else requests.post(url, json=body)
 
 
-class Client:
+class Player:
 
     def __init__(self, player_name):
         self.player_name = player_name
@@ -107,9 +107,9 @@ class Client:
 
     def poll_until_turn(self):
         """
-        Poll game status every 5 seconds until clients turn.
-        If opponent does not respond within 60 seconds then client wins.
-        :return: Clients turn, false if game state is WINNER or opponent timmed out. 
+        Poll game status every 5 seconds until players turn.
+        If opponent does not respond within 60 seconds then player wins.
+        :return: Players turn, false if game state is WINNER or opponent timmed out.
         :rtype: bool
         """
 
@@ -143,7 +143,7 @@ class Client:
 
 def select_column():
     """
-    Ask client to select a column.
+    Ask player to select a column.
 
     :return: Selected column
     :rtype: int
@@ -160,14 +160,14 @@ def select_column():
             print('Please enter an integer')
 
 
-def create_client():
+def create_player():
     """
-    Create Client object.
-    :return: Client object with user provided name
-    :rtype: Client
+    Create Player object.
+    :return: Player object with user provided name
+    :rtype: Player
     """
     player_name = input('Input player name: ')
-    return Client(player_name)
+    return Player(player_name)
 
 
 def start_game():
@@ -178,7 +178,7 @@ def start_game():
     play = True
 
     while play:
-        player = create_client()
+        player = create_player()
         player.establish_connection()
 
         player.poll_until_other_player_connected()

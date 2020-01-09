@@ -152,7 +152,7 @@ class GameSession:
 
     def add_player(self, player_name):
         """
-        Add player to game session
+        Add player to game_server session
         :param player_name: Name of player to add.
         :type player_name: str
         :return: Player added
@@ -178,7 +178,7 @@ class GameSession:
 
     def game_details(self):
         """
-        Return game details
+        Return game_server details
         :return: Game details
         :rtype: dict
         """
@@ -204,7 +204,7 @@ class GameSession:
 
     def check_for_winner(self):
         """
-        Check for winner and update game state
+        Check for winner and update game_server state
         """
         winning_disc = self.board.check_for_winner()
 

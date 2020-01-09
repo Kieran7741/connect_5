@@ -1,4 +1,4 @@
-from game.game_session import GameSession, Player
+from game_server.game_session import GameSession, Player
 
 import unittest
 from unittest.mock import Mock, patch
@@ -82,6 +82,7 @@ class TestPlayer(unittest.TestCase):
         self.game_session.board = mock_board
         self.game_session.check_for_winner()
         self.assertIsNone(self.game_session.winner)
+
 
 if __name__ == '__main__':
     unittest.main()
