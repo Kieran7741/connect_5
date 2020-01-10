@@ -148,7 +148,7 @@ def select_column():
     :return: Selected column
     :rtype: int
     """
-    print('You have 60 seconds to make a more or you loss the game.')
+    print('You have 60 seconds to make a more or you lose the game.')
     while True:
         try:
             column = int(input('Select Column (1-9): ')) - 1
